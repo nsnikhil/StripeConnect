@@ -1,13 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/matchParent"
     android:id="@+id/mainContainer"
+    style="@style/verticalLinearLayout"
     tools:context="com.nrs.nsnik.stripeconnect.MainActivity">
 
 
-    <include layout="@layout/toolbar"
-        android:id="@+id/mainToolbar"/>
+    <include
+        android:id="@+id/mainToolbar"
+        layout="@layout/toolbar" />
 
-</RelativeLayout>
+    <android.support.design.widget.TextInputLayout
+        android:layout_marginTop="@dimen/sixteen"
+        android:layout_marginBottom="@dimen/sixteen"
+        android:padding="@dimen/eight"
+        style="@style/stretchedVertically">
+
+        <android.support.design.widget.TextInputEditText
+            android:hint="@string/email"
+            android:inputType="textEmailAddress"
+            android:id="@+id/testEmail"
+            style="@style/stretchedVertically" />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/testButton"
+        style="@style/wrapContent"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/sixteen"
+        android:layout_marginBottom="@dimen/sixteen"
+        android:text="@string/create"
+        android:textColor="@color/colorPrimary"
+        android:theme="@style/buttonColor" />
+
+    <com.stripe.android.view.CardInputWidget
+        android:id="@+id/testCardWidget"
+        android:layout_marginTop="@dimen/sixteen"
+        android:layout_marginBottom="@dimen/sixteen"
+        android:padding="@dimen/eight"
+        style="@style/stretchedVertically"/>
+
+    <Spinner
+        android:id="@+id/testSpinner"
+        style="@style/stretchedVertically"/>
+
+    <Button
+        android:id="@+id/testPayButton"
+        style="@style/wrapContent"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/sixteen"
+        android:layout_marginBottom="@dimen/sixteen"
+        android:text="@string/pay"
+        android:textColor="@color/colorPrimary"
+        android:theme="@style/buttonColor" />
+
+
+</LinearLayout>
