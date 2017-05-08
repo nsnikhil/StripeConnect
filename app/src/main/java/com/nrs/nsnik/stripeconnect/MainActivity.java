@@ -1,5 +1,6 @@
 package com.nrs.nsnik.stripeconnect;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -15,9 +16,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nrs.nsnik.stripeconnect.fragemnts.dialogFragments.LoadingDialogFragment;
@@ -36,6 +39,7 @@ import com.stripe.model.AccountCollection;
 import com.stripe.model.Charge;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +53,11 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.mainContainer) LinearLayout mMainContainer;
     @BindView(R.id.testButton) Button tTestbutton;
     @BindView(R.id.testEmail) TextInputEditText tTestEmail;
-    @BindView(R.id.testPayButton) Button tPayButton;
-    @BindView(R.id.testCardWidget) CardInputWidget tCardWidget;
-    @BindView(R.id.testSpinner) Spinner tAccountList;
+    @BindView(R.id.testFName) TextInputEditText tTestFName;
+    @BindView(R.id.testLName) TextInputEditText tTestLName;
+    @BindView(R.id.testDob) TextView tDob;
     LoadingDialogFragment mLoadingDialog;
+    int mYear,mMonth,mDay;
     private static final String TEST_PUB_API_KEY = "pk_test_cHZ8p6lv1KldUz7RkWC50VEO";
     private static final String TEST_SEC_API_KEY = "sk_test_vb9Wu57BSwTRcxB7wqa0tDjC";
 
@@ -69,36 +74,9 @@ public class MainActivity extends AppCompatActivity {
         addOnConnection();
     }
 
-    private class createList extends AsyncTask<Void,Void,List<String>> {
-
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            Stripe.apiKey = "sk_test_vb9Wu57BSwTRcxB7wqa0tDjC";
-            Map<String, Object> accountParams = new HashMap<>();
-            List<String> idList = new ArrayList<>();
-            try {
-                AccountCollection accountCollection = Account.list(accountParams);
-                List<Account> accountList = accountCollection.getData();
-                for(Integer i = 0;i<accountList.size();i++){
-                    idList.add(accountList.get(i).getId());
-                }
-            } catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException | APIException e) {
-                e.printStackTrace();
-            }
-            return idList;
-        }
-
-        @Override
-        protected void onPostExecute(List<String> idList) {
-            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_item,idList);
-            tAccountList.setAdapter(arrayAdapter);
-        }
-    }
-
     private void addOnConnection() {
         if (checkConnection()) {
             listeners();
-            new  createList().execute();
         } else {
             removeOffConnection();
         }
@@ -122,87 +100,42 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        tPayButton.setOnClickListener(new View.OnClickListener() {
+        final Calendar c = Calendar.getInstance();
+        tDob.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pay();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+                        tDob.setText(dayOfMonth+"/"+month+"/"+year);
+                        mYear = year;
+                        mMonth = month;
+                        mDay = dayOfMonth;
+                    }
+                },c.get(Calendar.YEAR),c.get(Calendar.MONTH),c.get(Calendar.DAY_OF_WEEK));
+                datePickerDialog.show();
             }
         });
     }
 
-    private void pay() {
-        Card mCard = tCardWidget.getCard();
-        if (mCard == null) {
-            messageDialog("Invalid Card Data");
-        } else {
-            try {
-                mLoadingDialog = new LoadingDialogFragment();
-                mLoadingDialog.show(getSupportFragmentManager(),"wait");
-                com.stripe.android.Stripe stripe = new com.stripe.android.Stripe(getApplicationContext(), TEST_PUB_API_KEY);
-                stripe.createToken(mCard,
-                        new TokenCallback() {
-                            public void onSuccess(Token token) {
-                                new chargeAccount().execute(token.getId(),tAccountList.getSelectedItem().toString());
-                            }
-
-                            public void onError(Exception error) {
-                                toastView(error.getLocalizedMessage(), Toast.LENGTH_LONG);
-                                mLoadingDialog.dismiss();
-                            }
-                        }
-                );
-            }catch (IllegalArgumentException e){
-                mLoadingDialog.dismiss();
-                e.printStackTrace();
-            }
-
-        }
-
-    }
-
-    private void createCharge(String tokenId,String accId){
-        Stripe.apiKey = "sk_test_vb9Wu57BSwTRcxB7wqa0tDjC";
-
-        Map<String, Object> chargeParams = new HashMap<>();
-        chargeParams.put("amount", 2000);
-        chargeParams.put("currency", "usd");
-        chargeParams.put("application_fee",20);
-        chargeParams.put("description", "testcharge");
-        chargeParams.put("source",tokenId );
-        chargeParams.put("on_behalf_of",accId);
-
-        Map<String, Object> destinationParams = new HashMap<>();
-        destinationParams.put("account", accId);
-        chargeParams.put("destination", destinationParams);
-
-        try {
-            Charge.create(chargeParams);
-        } catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException | APIException e) {
-            e.printStackTrace();
-        }
-    }
-
     private boolean validEmail(){
-        if(!tTestEmail.getText().toString().isEmpty()&&tTestEmail.getText().toString().length()>0){
-            return true;
+        if(tTestEmail.getText().toString().isEmpty()&&tTestEmail.getText().toString().length()<=0){
+            tTestEmail.setFocusable(true);
+            tTestEmail.setError("Enter a email id");
+            return false;
+        }else if(tTestFName.getText().toString().isEmpty()&&tTestFName.getText().toString().length()<=0){
+            tTestFName.setFocusable(true);
+            tTestFName.setError("Enter First Name");
+            return false;
+        }else if(tTestLName.getText().toString().isEmpty()&&tTestLName.getText().toString().length()<=0){
+            tTestLName.setFocusable(true);
+            tTestLName.setError("Enter Last Name");
+            return false;
+        }else if(mYear==0||mMonth==0||mDay==0){
+            toastView("Enter DOB",Toast.LENGTH_LONG);
+            return false;
         }
-        tTestEmail.setError("Enter a email id");
-        return false;
-    }
-
-    private class chargeAccount extends AsyncTask<String,Void,Void>{
-
-        @Override
-        protected Void doInBackground(String... params) {
-            createCharge(params[0],params[1]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            mLoadingDialog.dismiss();
-        }
+        return true;
     }
 
     private class makeAccount extends AsyncTask<Void,Void,String>{
@@ -216,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if(s.contains("acct_")){
-                new  createList().execute();
                 toastView(s,Toast.LENGTH_LONG);
             }else {
                 toastView("Error",Toast.LENGTH_LONG);
@@ -233,6 +165,23 @@ public class MainActivity extends AppCompatActivity {
         accountParams.put("managed", false);
         accountParams.put("country", "US");
         accountParams.put("email", tTestEmail.getText().toString());
+        //accountParams.put("payouts_enabled",true);
+
+        Map<String, Object> legalEntityParam = new HashMap<>();
+
+        legalEntityParam.put("first_name",tTestFName.getText().toString());
+        legalEntityParam.put("last_name",tTestLName.getText().toString());
+
+        Map<String, Object> DobParam = new HashMap<>();
+
+        DobParam.put("day",mDay);
+        DobParam.put("month",mMonth);
+        DobParam.put("year",mYear);
+
+        legalEntityParam.put("dob",DobParam);
+
+
+        accountParams.put("legal_entity", legalEntityParam);
 
         try {
             Account c = Account.create(accountParams);
