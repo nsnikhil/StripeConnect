@@ -2,6 +2,8 @@ package com.nrs.nsnik.stripeconnect;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -14,34 +16,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nrs.nsnik.stripeconnect.fragemnts.dialogFragments.LoadingDialogFragment;
 import com.stripe.Stripe;
-import com.stripe.android.TokenCallback;
-import com.stripe.android.model.Card;
-import com.stripe.android.model.Token;
-import com.stripe.android.view.CardInputWidget;
 import com.stripe.exception.APIConnectionException;
 import com.stripe.exception.APIException;
 import com.stripe.exception.AuthenticationException;
 import com.stripe.exception.CardException;
 import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.Account;
-import com.stripe.model.AccountCollection;
-import com.stripe.model.Charge;
+import com.stripe.model.FileUpload;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
@@ -77,12 +72,14 @@ public class MainActivity extends AppCompatActivity {
     private void addOnConnection() {
         if (checkConnection()) {
             listeners();
+            tTestbutton.setEnabled(true);
         } else {
             removeOffConnection();
         }
     }
 
     private void removeOffConnection() {
+        tTestbutton.setEnabled(false);
         Snackbar.make(mMainContainer, "No Internet", Snackbar.LENGTH_INDEFINITE).setAction("Retry", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,7 +92,10 @@ public class MainActivity extends AppCompatActivity {
         tTestbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(validEmail()){
+                if(verifyFields()){
+                    mLoadingDialog  = new LoadingDialogFragment();
+                    mLoadingDialog.setCancelable(false);
+                    mLoadingDialog.show(getSupportFragmentManager(),"wait");
                     new makeAccount().execute();
                 }
             }
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private boolean validEmail(){
+    private boolean verifyFields(){
         if(tTestEmail.getText().toString().isEmpty()&&tTestEmail.getText().toString().length()<=0){
             tTestEmail.setFocusable(true);
             tTestEmail.setError("Enter a email id");
@@ -142,14 +142,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(Void... params) {
-            return stripeFunction();
+            return addManagedAccount();
         }
 
         @Override
         protected void onPostExecute(String s) {
+            mLoadingDialog.dismiss();
             super.onPostExecute(s);
             if(s.contains("acct_")){
-                toastView(s,Toast.LENGTH_LONG);
+                toastView("Account Created",Toast.LENGTH_LONG);
             }else {
                 toastView("Error",Toast.LENGTH_LONG);
                 toastView(s,Toast.LENGTH_LONG);
@@ -157,20 +158,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String stripeFunction() {
-        String id = null;
+    private String addManagedAccount(){
+        String id ;
         Stripe.apiKey = "sk_test_vb9Wu57BSwTRcxB7wqa0tDjC";
-
         Map<String, Object> accountParams = new HashMap<>();
-        accountParams.put("managed", false);
+        accountParams.put("managed", true);
         accountParams.put("country", "US");
         accountParams.put("email", tTestEmail.getText().toString());
-        //accountParams.put("payouts_enabled",true);
+
+        Map<String, Object> externalAccountParams = new HashMap<>();
+        externalAccountParams.put("object", "bank_account");
+        externalAccountParams.put("country", "US");
+        externalAccountParams.put("currency", "usd");
+        externalAccountParams.put("routing_number", "110000000");
+        externalAccountParams.put("account_number", "000123456789");
+        accountParams.put("external_account", externalAccountParams);
+
+        Map<String, Object> tosParams = new HashMap<>();
+        tosParams.put("date", 1494327004);
+        tosParams.put("ip", "202.142.82.86");
+        accountParams.put("tos_acceptance", tosParams);
+
+        Map<String, Object> addressParams = new HashMap<String, Object>();
+        addressParams.put("line1", "1234 Main Street");
+        addressParams.put("postal_code", 94111);
+        addressParams.put("city", "San Francisco");
+        addressParams.put("state", "CA");
 
         Map<String, Object> legalEntityParam = new HashMap<>();
-
-        legalEntityParam.put("first_name",tTestFName.getText().toString());
-        legalEntityParam.put("last_name",tTestLName.getText().toString());
 
         Map<String, Object> DobParam = new HashMap<>();
 
@@ -178,8 +193,31 @@ public class MainActivity extends AppCompatActivity {
         DobParam.put("month",mMonth);
         DobParam.put("year",mYear);
 
-        legalEntityParam.put("dob",DobParam);
+        Map<String, Object> fileUploadParams = new HashMap<>();
+        fileUploadParams.put("purpose", "identity_document");
+        fileUploadParams.put("file", makeFile());
+        FileUpload fileObj = null;
+        try {
+            fileObj = FileUpload.create(fileUploadParams);
+        } catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException | APIException e) {
+            mLoadingDialog.dismiss();
+            id = e.getMessage();
+            e.printStackTrace();
+        }
 
+        Map<String, Object> verificationParams = new HashMap<>();
+        verificationParams.put("document", fileObj.getId());
+
+
+        legalEntityParam.put("dob",DobParam);
+        legalEntityParam.put("first_name",tTestFName.getText().toString());
+        legalEntityParam.put("last_name",tTestLName.getText().toString());
+        legalEntityParam.put("type", "individual");
+        legalEntityParam.put("address", addressParams);
+        //legalEntityParam.put("ssn_last_4", 1234);
+        legalEntityParam.put("personal_id_number", 123456789);
+        legalEntityParam.put("verification", verificationParams);
+        legalEntityParam.put("personal_id_number", 123456789);
 
         accountParams.put("legal_entity", legalEntityParam);
 
@@ -187,10 +225,35 @@ public class MainActivity extends AppCompatActivity {
             Account c = Account.create(accountParams);
             id = c.getId();
         } catch (AuthenticationException | InvalidRequestException | APIConnectionException | CardException | APIException e) {
+            mLoadingDialog.dismiss();
             id = e.getMessage();
             e.printStackTrace();
         }
         return id;
+    }
+
+    private File makeFile(){
+        Bitmap bmp= BitmapFactory.decodeResource(getResources(), R.drawable.success);
+        File f = new File(getExternalCacheDir(),"success.jpg");
+        if(!f.exists()) {
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(f);
+                bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                fos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (fos != null) {
+                    try {
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return f;
     }
 
     private void messageDialog(String message) {

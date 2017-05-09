@@ -9,6 +9,7 @@
     <string name="lname">Last Name</string>
     <string name="justasec">Just a sec…</string>
     <string name="dob">Date of birth</string>
+    <string name="deleteall">Delete all</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

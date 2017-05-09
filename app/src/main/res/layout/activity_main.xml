@@ -11,58 +11,57 @@
         layout="@layout/toolbar" />
 
     <android.support.design.widget.TextInputLayout
-        android:padding="@dimen/eight"
-        style="@style/stretchedVertically">
+        style="@style/stretchedVertically"
+        android:padding="@dimen/eight">
 
         <android.support.design.widget.TextInputEditText
-            android:hint="@string/email"
-            android:inputType="textEmailAddress"
             android:id="@+id/testEmail"
-            style="@style/stretchedVertically" />
+            style="@style/stretchedVertically"
+            android:hint="@string/email"
+            android:inputType="textEmailAddress" />
 
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:padding="@dimen/eight"
-        style="@style/stretchedVertically">
+        style="@style/stretchedVertically"
+        android:padding="@dimen/eight">
 
         <android.support.design.widget.TextInputEditText
-            android:hint="@string/fname"
-            android:inputType="textEmailAddress"
             android:id="@+id/testFName"
-            style="@style/stretchedVertically" />
+            style="@style/stretchedVertically"
+            android:hint="@string/fname"
+            android:inputType="textEmailAddress" />
 
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
-        android:padding="@dimen/eight"
-        style="@style/stretchedVertically">
+        style="@style/stretchedVertically"
+        android:padding="@dimen/eight">
 
         <android.support.design.widget.TextInputEditText
-            android:hint="@string/lname"
-            android:inputType="textEmailAddress"
             android:id="@+id/testLName"
-            style="@style/stretchedVertically" />
+            style="@style/stretchedVertically"
+            android:hint="@string/lname"
+            android:inputType="textEmailAddress" />
 
     </android.support.design.widget.TextInputLayout>
 
     <TextView
+        android:id="@+id/testDob"
+        style="@style/stretchedVertically"
         android:padding="@dimen/sixteen"
         android:text="@string/dob"
-        android:textSize="16sp"
-        android:id="@+id/testDob"
-        style="@style/stretchedVertically"/>
+        android:textSize="16sp" />
 
     <Button
         android:id="@+id/testButton"
         style="@style/wrapContent"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/sixteen"
         android:layout_marginBottom="@dimen/sixteen"
+        android:layout_marginTop="@dimen/sixteen"
         android:text="@string/create"
         android:textColor="@color/colorPrimary"
         android:theme="@style/buttonColor" />
-
 
 
 </LinearLayout>
