@@ -17,8 +17,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +52,19 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.testEmail) TextInputEditText tTestEmail;
     @BindView(R.id.testFName) TextInputEditText tTestFName;
     @BindView(R.id.testLName) TextInputEditText tTestLName;
+
+    @BindView(R.id.testCountry) TextInputEditText tTestCountry;
+    @BindView(R.id.testCurrency) TextInputEditText tTestLCurrency;
+    @BindView(R.id.testRoutingno) TextInputEditText tTestRoutingNo;
+    @BindView(R.id.testAccountno) TextInputEditText tTestAccountNo;
+    @BindView(R.id.testAddress) TextInputEditText tTestAddressLine;
+    @BindView(R.id.testPostal) TextInputEditText tTestPostalCode;
+    @BindView(R.id.testCity) TextInputEditText tTestCity;
+    @BindView(R.id.testState) TextInputEditText tTestState;
+    @BindView(R.id.testPid) TextInputEditText tPid;
+
+    @BindView(R.id.testModeSwitch) Switch tModChange;
+
     @BindView(R.id.testDob) TextView tDob;
     LoadingDialogFragment mLoadingDialog;
     int mYear,mMonth,mDay;
@@ -116,23 +131,112 @@ public class MainActivity extends AppCompatActivity {
                 datePickerDialog.show();
             }
         });
+        tModChange.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    tModChange.setTextColor(ContextCompat.getColor(MainActivity.this,R.color.colorAccent));
+                }else {
+                    tModChange.setTextColor(ContextCompat.getColor(MainActivity.this,R.color.colorPrimaryDark));
+                }
+            }
+        });
     }
 
     private boolean verifyFields(){
         if(tTestEmail.getText().toString().isEmpty()&&tTestEmail.getText().toString().length()<=0){
-            tTestEmail.setFocusable(true);
-            tTestEmail.setError("Enter a email id");
+            tTestEmail.requestFocus();
+            tTestEmail.setError("Enter the email id");
             return false;
         }else if(tTestFName.getText().toString().isEmpty()&&tTestFName.getText().toString().length()<=0){
-            tTestFName.setFocusable(true);
-            tTestFName.setError("Enter First Name");
+            tTestFName.requestFocus();
+            tTestFName.setError("Enter the First Name");
             return false;
         }else if(tTestLName.getText().toString().isEmpty()&&tTestLName.getText().toString().length()<=0){
-            tTestLName.setFocusable(true);
-            tTestLName.setError("Enter Last Name");
+            tTestLName.requestFocus();
+            tTestLName.setError("Enter the Last Name");
             return false;
-        }else if(mYear==0||mMonth==0||mDay==0){
-            toastView("Enter DOB",Toast.LENGTH_LONG);
+        }else if(tTestCountry.getText().toString().isEmpty()&&tTestCountry.getText().toString().length()<=0){
+            tTestCountry.requestFocus();
+            tTestCountry.setError("Enter the country");
+            return false;
+        }else if(tTestLCurrency.getText().toString().isEmpty()&&tTestLCurrency.getText().toString().length()<=0){
+            tTestLCurrency.requestFocus();
+            tTestLCurrency.setError("Enter the currency");
+            return false;
+        }else if(tTestRoutingNo.getText().toString().isEmpty()&&tTestRoutingNo.getText().toString().length()<=0){
+            tTestRoutingNo.requestFocus();
+            tTestRoutingNo.setError("Enter the routing no");
+            return false;
+        }else if(tTestAccountNo.getText().toString().isEmpty()&&tTestAccountNo.getText().toString().length()<=0){
+            tTestAccountNo.requestFocus();
+            tTestAccountNo.setError("Enter the account no");
+            return false;
+        }else if(tTestAddressLine.getText().toString().isEmpty()&&tTestAddressLine.getText().toString().length()<=0){
+            tTestAddressLine.requestFocus();
+            tTestAddressLine.setError("Enter the address");
+            return false;
+        }else if(tTestPostalCode.getText().toString().isEmpty()&&tTestPostalCode.getText().toString().length()<=0){
+            tTestPostalCode.requestFocus();
+            tTestPostalCode.setError("Enter the postal code");
+            return false;
+        }else if(tTestCity.getText().toString().isEmpty()&&tTestCity.getText().toString().length()<=0){
+            tTestCity.requestFocus();
+            tTestCity.setError("Enter the name of city");
+            return false;
+        }else if(tTestState.getText().toString().isEmpty()&&tTestState.getText().toString().length()<=0){
+            tTestState.requestFocus();
+            tTestState.setError("Enter the name of state");
+            return false;
+        }else if(tPid.getText().toString().isEmpty()&&tPid.getText().toString().length()<=0){
+            tPid.requestFocus();
+            tPid.setError("Enter the Personal identification no");
+            return false;
+        }else if(mYear==0||mMonth==0||mDay==0) {
+            toastView("Enter DOB", Toast.LENGTH_LONG);
+            return false;
+        }if(!tModChange.isChecked()){
+            return checkIFTest();
+        }
+        return true;
+    }
+
+    private boolean checkIFTest(){
+        if(!tTestCountry.getText().toString().equalsIgnoreCase("US")){
+            tTestCountry.requestFocus();
+            tTestCountry.setError("Only us can be used while in test mode");
+            return false;
+        }else if(!tTestLCurrency.getText().toString().equalsIgnoreCase("usd")){
+            tTestLCurrency.requestFocus();
+            tTestLCurrency.setError("Only usd can be used while in test mode");
+            return false;
+        }else if(!tTestRoutingNo.getText().toString().equalsIgnoreCase("110000000")){
+            tTestRoutingNo.requestFocus();
+            tTestRoutingNo.setError("Enter 110000000 while in test mode");
+            return false;
+        }else if(!tTestAccountNo.getText().toString().equalsIgnoreCase("000123456789")){
+            tTestAccountNo.requestFocus();
+            tTestAccountNo.setError("Enter 000123456789 while in test mode");
+            return false;
+        }else if(!tTestAddressLine.getText().toString().equalsIgnoreCase("1234 Main Street")){
+            tTestAddressLine.requestFocus();
+            tTestAddressLine.setError("Enter 1234 Main Street while in test mode");
+            return false;
+        }else if(!tTestPostalCode.getText().toString().equalsIgnoreCase("94111")){
+            tTestPostalCode.requestFocus();
+            tTestPostalCode.setError("Enter 94111 Main Street while in test mode");
+            return false;
+        }else if(!tTestCity.getText().toString().equalsIgnoreCase("San Francisco")){
+            tTestCity.requestFocus();
+            tTestCity.setError("Enter San Francisco while in test mode");
+            return false;
+        }else if(!tTestState.getText().toString().equalsIgnoreCase("CA")){
+            tTestState.requestFocus();
+            tTestState.setError("Enter CA while in test mode");
+            return false;
+        }else if(!tPid.getText().toString().equalsIgnoreCase("123456789")){
+            tPid.requestFocus();
+            tPid.setError("Enter 123456789 while in test mode");
             return false;
         }
         return true;
@@ -158,20 +262,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private String addManagedAccount(){
         String id ;
-        Stripe.apiKey = "sk_test_vb9Wu57BSwTRcxB7wqa0tDjC";
+        if(tModChange.isChecked()){
+            Stripe.apiKey = "sk_live_QHz7MtmApAQ8tft662JqXvHh";
+        }else {
+            Stripe.apiKey = "sk_test_vb9Wu57BSwTRcxB7wqa0tDjC";
+        }
         Map<String, Object> accountParams = new HashMap<>();
         accountParams.put("managed", true);
-        accountParams.put("country", "US");
+        accountParams.put("country",  tTestCountry.getText().toString());
         accountParams.put("email", tTestEmail.getText().toString());
 
         Map<String, Object> externalAccountParams = new HashMap<>();
         externalAccountParams.put("object", "bank_account");
-        externalAccountParams.put("country", "US");
-        externalAccountParams.put("currency", "usd");
-        externalAccountParams.put("routing_number", "110000000");
-        externalAccountParams.put("account_number", "000123456789");
+        externalAccountParams.put("country", tTestCountry.getText().toString());
+        externalAccountParams.put("currency", tTestLCurrency.getText().toString());
+        externalAccountParams.put("routing_number", tTestRoutingNo.getText().toString());
+        externalAccountParams.put("account_number",  tTestAccountNo.getText().toString());
         accountParams.put("external_account", externalAccountParams);
 
         Map<String, Object> tosParams = new HashMap<>();
@@ -180,10 +289,10 @@ public class MainActivity extends AppCompatActivity {
         accountParams.put("tos_acceptance", tosParams);
 
         Map<String, Object> addressParams = new HashMap<String, Object>();
-        addressParams.put("line1", "1234 Main Street");
-        addressParams.put("postal_code", 94111);
-        addressParams.put("city", "San Francisco");
-        addressParams.put("state", "CA");
+        addressParams.put("line1",  tTestAddressLine.getText().toString());
+        addressParams.put("postal_code", Integer.parseInt( tTestPostalCode.getText().toString()));
+        addressParams.put("city",  tTestCity.getText().toString());
+        addressParams.put("state",  tTestState.getText().toString());
 
         Map<String, Object> legalEntityParam = new HashMap<>();
 
@@ -215,9 +324,9 @@ public class MainActivity extends AppCompatActivity {
         legalEntityParam.put("type", "individual");
         legalEntityParam.put("address", addressParams);
         //legalEntityParam.put("ssn_last_4", 1234);
-        legalEntityParam.put("personal_id_number", 123456789);
+        //legalEntityParam.put("personal_id_number", 123456789);
         legalEntityParam.put("verification", verificationParams);
-        legalEntityParam.put("personal_id_number", 123456789);
+        legalEntityParam.put("personal_id_number", Integer.parseInt( tPid.getText().toString()));
 
         accountParams.put("legal_entity", legalEntityParam);
 
